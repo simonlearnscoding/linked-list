@@ -1,33 +1,31 @@
 const Module = (function(){
-    function linkedList() {
+    function linkedList(node) {
         const obj = Object.create(proto)
-        obj.list = []
+        obj.head = null
         return obj
     }
     const functions = {
-
         modulate: {
-
-            append(value) {
-                const list =  this.list
-                const item = nodeCreator(value)
-                //will add a new node containing value to the end of the list
-                list.push(item)
-                //if there is a node before that
-                if (list.length > 1) {
-                    list[list.length - 2].nextNode = item
-                    }
-    },
             prepend(value) {
+                // Append node at the
+                const node = nodeCreator(value)
+                node.nextNode = this.head
+                this.head = node
+    },
+            append(value) {
+                const node= nodeCreator(value)
+                const tail = this.tail()
+                if(!tail) {this.head=node}
+                else {
+                    tail.nextNode = node
+                    node.nextNode = null
+                }
 
-                const list = this.list
-                const item = nodeCreator(value, list[0])
                 //will add a new node containing value to the start of the list
-                list.unshift(item)
     },
             pop() {
-                const tail = this.tail()
-                recursion(tail)
+                const head = this.getHead()
+                recursion(head)
                 function recursion(current) {
                     const next = current.nextNode
                     if (!next.nextNode) {
@@ -38,36 +36,30 @@ const Module = (function(){
                     }
                 }
     },
-
             insertAt(value, index) {
                 // inserts new node with value = value at index
 
                 //select first item
+                const head = this.getHead()
+                let counter = 0
+                let node = this.getNode(head, index-1)
 
-                // this.list.push(nodeCreator(value, pointer))
-                // this.list.
-                // this.list.unshift(index, nodeCreator(value, this.list[index+1]))
+                const newNode = nodeCreator(value)
+                newNode.nextNode = node.nextNode
+                node.nextNode = newNode
+
                 },
+            removeAt(index){
+                const head = this.getHead()
+                const targetDad = this.getNode(head, index-1)
+                const target = targetDad.nextNode
+                targetDad.nextNode = target.nextNode
+            },
         },
         printThings: {
-            getNode(index) {
-                const tail = this.tail()
-                return getIndexNode(tail, index)
 
-                function getIndexNode(current, index, counter=0)
-                    {
-                        if(counter===index) {
-                            return current
-                        }
-                        else {
-                            next = current.nextNode
-                            counter++
-                            return getIndexNode(next, index, counter)
-                        }
-                    }
-            },
             size() {
-                const tail = this.tail()
+                const tail = this.getHead()
                 return getNumber(tail)
 
                 function getNumber(current, count=0) {
@@ -81,38 +73,44 @@ const Module = (function(){
                     }}
                 //will return the total number of nodes in the list
     },
-            head() {
-        //will return the FIRST node in the list
-                let pointer = this.list[0]
-                while(pointer.nextNode !== null) {
-                    pointer = pointer.nextNode
-                }
-                return pointer
+            getHead() {
+                //will return the FIRST node in the list
+                return this.head
+    },
+        getNode(current, index, counter=0) {
+        if(index===counter) {
+            return current
+        }
+        counter++
+        const next = current.nextNode
+        return this.getNode(next, index, counter)
     },
             tail() {
-        // will return the last node in the list
-                let counter = 7
-                let pointer = this.head()
-                return getPrevious(pointer, this.list)
+                // will return the last node in the list
+                let pointer = this.getHead()
+                return getTail(pointer)
 
-                function getPrevious(current, list)
+                function getTail(current)
                         {
-                            const previous = list.filter(node => node.nextNode === current)[0]
-                            if(!previous) {
-                                return current
-                            }
+                            if(current === null) {return current}
+                            if(!current.nextNode)
+                                {
+                                    return current
+                                }
                             else
                             {
-                                return getPrevious(previous, list)
+                                return getTail(current.nextNode)
                             }
 
                     }
 
     },
             at(index) {
-                const current = this.tail()
-                getNode(current, index)
+                //returns the node at the given index
+                const current = this.getHead()
+                return getNode(current, index)
                 function getNode(current, index, counter=0) {
+                    if(!current) { throw new Error(`There is no node at position ${index}, in fact there are only ${counter} nodes in this list`)}
                     if (index==counter) {
                         return current
                     }
@@ -122,14 +120,15 @@ const Module = (function(){
                         return getNode(next, index, counter)
                     }
                 }
-              //returns the node at the given index
-               return this.list[index]
 
     },
             find(value) {
-                const current = this.tail()
+                const current = this.getHead()
                 return find(current, value)
                 function find(current, value) {
+                    if(!current) {
+                        return null
+                    }
                     if(current.value === value) {
                         return current
                     }
@@ -145,15 +144,38 @@ const Module = (function(){
                 }
                 throw new Error('no Node item with this value in list!')
                 // or null if not found
+            }, //TODO rework this one
+            contains(value) {
+                const current = this.getHead()
+                return find(current, value)
+                function find(current, value) {
+                    if(!current) {
+                        return false
+                    }
+                    if(current.value === value) {
+                        return true
+                        }
+                    else {
+                        const next = current.nextNode
+                        return find(next, value)
+                    }
+                }
+                // redurns the index of the node containing value
+                const result = this.list.filter(item => item.value === value)[0]
+                if(result!== undefined) {
+                    return result
+                }
+                throw new Error('no Node item with this value in list!')
+                // or null if not found
             },
             toString() {
-        //represents your linkedList objects as strings
-        //sou you can print them out and preview them in the console
-        // the format should be
-        // ( value ) -> ( value ) -> ( value ) -> null
-        const tail = this.tail()
+                //represents your linkedList objects as strings
+                //sou you can print them out and preview them in the console
+                // the format should be
+                // ( value ) -> ( value ) -> ( value ) -> null
+                const tail = this.tail()
 
-        return stringFunction(tail)
+        return stringFunction(this.getHead())
 
         function stringFunction(current, string='') {
             string += `( ${current.value} ) -> `
@@ -171,7 +193,6 @@ const Module = (function(){
 
         }
     }
-
     const proto = createPrototype()
 
     function nodeCreator(value=null, nextNode=null) {
@@ -189,34 +210,29 @@ const Module = (function(){
         return proto
     }
 
-
     return linkedList
 })()
 
-
-class linkedList {
-    constructor() {
-        this.list = []
-    }
-
-
-    static removeAt(index) {
-        //removes the node at index=index
-    }
-    }
-
-
-
 const list = Module()
-list.append(100)
+list.getHead()
+list.prepend(100)
 list.append(300)
 list.append(400)
-list.pop()
+list.insertAt(24, 2)
+list.append('end')
+list.removeAt(1)
+// list.pop()
+
+// list.pop()
 // list.insertAt(500, 2)
-console.log(list.head())
+// console.log(list.head())
 console.log(list.tail())
+console.log(list.contains(300))
+
+console.log(list.find(300))
+console.log(list.contains('put'))
 console.log(list.toString())
 console.log(list.size())
-console.log(list.at(1))
-console.log(list.find(100))
+// console.log(list.at(3))
+// console.log(list.find(100))
 
